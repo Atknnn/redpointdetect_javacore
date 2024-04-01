@@ -7,16 +7,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class RedPixelClicker {
-    private static volatile boolean isProgramClosed = false;
 
     public static void main(String[] args) {
         try {
             Robot robot = new Robot();
             Rectangle screenRect = new Rectangle(0, 0, 2560, 1080);
 
-            int boxSize = 10;
+            int boxSize = 15;
             int boxX = screenRect.width / 2 - boxSize / 2;
             int boxY = screenRect.height / 2 - boxSize / 2;
+
+            int interval = 5; // Kontrol aralığı
 
             // ExecutorService ile iki thread'i eşzamanlı olarak çalıştırma
             ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -24,8 +25,8 @@ public class RedPixelClicker {
             // Click işlemleri thread'i
             executorService.submit(() -> {
                 try {
-                    while (!isProgramClosed) {
-                        boolean redPixelDetected = isRedPixelDetected(robot, boxX, boxY, boxSize);
+                    while (true) {
+                        boolean redPixelDetected = isRedPixelDetected(robot, boxX, boxY, boxSize, interval);
                         if (redPixelDetected) {
 
                             // Kırmızı piksel algılandığında sol tıklama yap
@@ -33,36 +34,29 @@ public class RedPixelClicker {
                             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 
                             // 100 milisaniye bekleyerek basılı tut
-                            Thread.sleep(100);
+                            Thread.sleep(50);
                             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 
                         }
 
                         // Bir saniye /10 bekleyerek döngüyü tekrarla
-                        Thread.sleep(10);
+                        Thread.sleep(1);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             });
 
-            // Kullanıcının programı kapattığını kontrol et
-            while (!isProgramClosed) {
-                Thread.sleep(1000); // Bekleme süresini uygun bir şekilde ayarlayabilirsiniz.
-            }
-
             // ExecutorService'i kapat
             executorService.shutdown();
         } catch (AWTException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
-    private static boolean isRedPixelDetected(Robot robot, int x, int y, int size) {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+    private static boolean isRedPixelDetected(Robot robot, int x, int y, int size, int interval) {
+        for (int i = 0; i < size; i += interval) { // Belirli aralıklarla kontrol et
+            for (int j = 0; j < size; j += interval) { // Belirli aralıklarla kontrol et
                 Color pixelColor = robot.getPixelColor(x + i, y + j);
                 if (isRed(pixelColor)) {
                     return true;
