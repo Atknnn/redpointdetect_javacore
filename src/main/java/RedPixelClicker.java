@@ -7,17 +7,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class RedPixelClicker {
+    private static final int SCREEN_WIDTH = 2560;
+    private static final int SCREEN_HEIGHT = 1080;
+    private static final int BOX_SIZE = 30;
+    private static final int INTERVAL = 2;
 
     public static void main(String[] args) {
         try {
             Robot robot = new Robot();
-            Rectangle screenRect = new Rectangle(0, 0, 2560, 1080);
+            Rectangle screenRect = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-            int boxSize = 15;
-            int boxX = screenRect.width / 2 - boxSize / 2;
-            int boxY = screenRect.height / 2 - boxSize / 2;
-
-            int interval = 5; // Kontrol aralığı
+            int boxX = SCREEN_WIDTH / 2 - BOX_SIZE / 2;
+            int boxY = SCREEN_HEIGHT / 2 - BOX_SIZE / 2;
 
             // ExecutorService ile iki thread'i eşzamanlı olarak çalıştırma
             ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -26,20 +27,18 @@ public class RedPixelClicker {
             executorService.submit(() -> {
                 try {
                     while (true) {
-                        boolean redPixelDetected = isRedPixelDetected(robot, boxX, boxY, boxSize, interval);
+                        boolean redPixelDetected = isRedPixelDetected(robot, boxX, boxY);
                         if (redPixelDetected) {
-
                             // Kırmızı piksel algılandığında sol tıklama yap
-                            robot.mouseMove(boxX + boxSize / 2, boxY + boxSize / 2);
+                            robot.mouseMove(boxX + BOX_SIZE / 2, boxY + BOX_SIZE / 2);
                             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 
-                            // 100 milisaniye bekleyerek basılı tut
+                            // 50 milisaniye bekleyerek basılı tut
                             Thread.sleep(50);
                             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-
                         }
 
-                        // Bir saniye /10 bekleyerek döngüyü tekrarla
+                        // Bir saniye / 10 bekleyerek döngüyü tekrarla
                         Thread.sleep(1);
                     }
                 } catch (InterruptedException e) {
@@ -54,9 +53,9 @@ public class RedPixelClicker {
         }
     }
 
-    private static boolean isRedPixelDetected(Robot robot, int x, int y, int size, int interval) {
-        for (int i = 0; i < size; i += interval) { // Belirli aralıklarla kontrol et
-            for (int j = 0; j < size; j += interval) { // Belirli aralıklarla kontrol et
+    private static boolean isRedPixelDetected(Robot robot, int x, int y) {
+        for (int i = 0; i < BOX_SIZE; i += INTERVAL) { // Belirli aralıklarla kontrol et
+            for (int j = 0; j < BOX_SIZE; j += INTERVAL) { // Belirli aralıklarla kontrol et
                 Color pixelColor = robot.getPixelColor(x + i, y + j);
                 if (isRed(pixelColor)) {
                     return true;
